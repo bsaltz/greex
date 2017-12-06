@@ -1,0 +1,36 @@
+group 'com.navigamez'
+version '1.0'
+
+apply plugin: 'java'
+apply plugin: 'jacoco'
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'dk.brics.automaton:automaton:1.11-8'
+    testCompile 'junit:junit:4.12'
+}
+
+javadoc {
+    options {
+        links(
+                'https://docs.oracle.com/javase/6/docs/api',
+                'http://www.brics.dk/automaton/doc'
+        )
+    }
+}
+
+task packageJavadoc(type: Jar, dependsOn: 'javadoc') {
+    from javadoc
+    classifier = 'javadoc'
+}
+
+task packageSources(type: Jar, dependsOn: 'classes') {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
