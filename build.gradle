@@ -3,6 +3,8 @@ version '1.0'
 
 apply plugin: 'java'
 apply plugin: 'jacoco'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
@@ -32,5 +34,60 @@ task packageJavadoc(type: Jar, dependsOn: 'javadoc') {
 
 task packageSources(type: Jar, dependsOn: 'classes') {
     from sourceSets.main.allSource
+    from 'LICENSE'
     classifier = 'sources'
+}
+
+artifacts {
+    archives packageJavadoc, packageSources
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment {
+                MavenDeployment deployment -> signing.signPom(deployment)
+            }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'greex'
+                packaging 'jar'
+                description 'Regex match generation for generating random strings or for creating unit test cases based on regular expressions.'
+                url 'https://github.com/bsaltz/greex'
+
+                scm {
+                    connection 'scm:git:https://github.com/bsaltz/greex.git'
+                    developerConnection 'scm:git:https://github.com/bsaltz/greex.git'
+                    url 'https://github.com/bsaltz/greex.git'
+                }
+
+                licenses {
+                    license {
+                        name 'MIT License'
+                        url 'http://www.opensource.org/licenses/mit-license.php'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'bsaltz'
+                        name 'Brian Saltz Jr.'
+                        email 'bsaltz@navigamez.com'
+                    }
+                }
+            }
+        }
+    }
 }
