@@ -1,0 +1,15 @@
+language: java
+
+jdk:
+  - oraclejdk6
+
+install:
+  - mkdir -p ~/.gradle
+  - echo signing.keyId=X > ~/.gradle/gradle.properties
+  - echo signing.password=X >> ~/.gradle/gradle.properties
+  - echo signing.secretKeyRingFile=X >> ~/.gradle/gradle.properties
+  - echo ossrhUsername=X >> ~/.gradle/gradle.properties
+  - echo ossrhPassword=X >> ~/.gradle/gradle.properties
+  - ./gradlew clean
+
+script: ./gradlew clean test jacocoTestReport jar packageJavadoc packageSources
