@@ -1,5 +1,7 @@
 # Greex README
 
+[![Build Status](https://travis-ci.org/bsaltz/greex.svg?branch=master)](https://travis-ci.org/bsaltz/greex)
+
 Greex is a Java library that can be used to generate matches for regular expressions. It supports both random generation as well as complete generation. This can be used for creating test data, generating random tokens, or creating unit test cases.
 
 ## How to Use Greex
