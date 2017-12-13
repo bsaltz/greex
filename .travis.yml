@@ -1,6 +1,6 @@
 language: java
 
-jdk: oraclejdk7
+jdk: openjdk8
 
 install:
   - mkdir -p ~/.gradle
