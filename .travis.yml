@@ -4,11 +4,19 @@ jdk: openjdk8
 
 install:
   - mkdir -p ~/.gradle
-  - echo signing.keyId=X > ~/.gradle/gradle.properties
-  - echo signing.password=X >> ~/.gradle/gradle.properties
-  - echo signing.secretKeyRingFile=X >> ~/.gradle/gradle.properties
-  - echo ossrhUsername=X >> ~/.gradle/gradle.properties
-  - echo ossrhPassword=X >> ~/.gradle/gradle.properties
+  - echo signing.keyId=X > $HOME/.gradle/gradle.properties
+  - echo signing.password=X >> $HOME/.gradle/gradle.properties
+  - echo signing.secretKeyRingFile=X >> $HOME/.gradle/gradle.properties
+  - echo ossrhUsername=X >> $HOME/.gradle/gradle.properties
+  - echo ossrhPassword=X >> $HOME/.gradle/gradle.properties
   - ./gradlew clean
 
 script: ./gradlew clean test jacocoTestReport jar packageJavadoc packageSources
+
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
