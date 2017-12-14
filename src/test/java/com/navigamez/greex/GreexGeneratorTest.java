@@ -200,6 +200,40 @@ public class GreexGeneratorTest {
         }
     }
 
+    @Test
+    public void generateAllLimited_1() {
+        String regex = "(white|black)|((light|dark) )?(red|green|blue|gray)";
+        int uniqueStrings = 14;
+        int maxCount = 5;
+        Pattern pattern = Pattern.compile(regex);
+        GreexGenerator generator = new GreexGenerator(regex);
+        Set<String> results = new TreeSet<String>();
+        results.addAll(generator.generateAllLimited(maxCount));
+        System.out.println("Unique strings: " + results.size());
+        System.out.printf("Coverage: %%%.2f\n", results.size() * 100.0 / uniqueStrings);
+        for (String s : results) {
+            System.out.println(s);
+            assertTrue(pattern.matcher(s).matches());
+        }
+        assertEquals(maxCount, results.size());
+    }
+
+    @Test
+    public void generateAllLimited_2() {
+        String regex = "a*([bd])+c?";
+        int uniqueStrings = 6098;
+        int maxCount = 1000;
+        Pattern pattern = Pattern.compile(regex);
+        GreexGenerator generator = new GreexGenerator(regex);
+        Set<String> results = generator.generateAllLimited(maxCount, 10);
+        System.out.println("Unique strings: " + results.size());
+        System.out.printf("Coverage: %%%.2f\n", results.size() * 100.0 / uniqueStrings);
+        assertEquals(maxCount, results.size());
+        for (String s : results) {
+            assertTrue(pattern.matcher(s).matches());
+        }
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void construct() {
         new GreexGenerator(null);
