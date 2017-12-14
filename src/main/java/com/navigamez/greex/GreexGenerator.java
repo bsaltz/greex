@@ -96,7 +96,8 @@ public class GreexGenerator {
 
     /**
      * Generate all the matches for this generator's regular expression. This method is the same as
-     * invoking {@code generateAll(Integer.MAX_VALUE)}.
+     * invoking {@code generateAll(Integer.MAX_VALUE)}. This method is the same as calling
+     * {@link #generateAllLimited(int, int)} with {@link Integer#MAX_VALUE} for both arguments.
      * <p>
      * This method is always thread safe.
      *
@@ -105,7 +106,7 @@ public class GreexGenerator {
      * @throws StackOverflowError might be thrown if the regular expression is non-finite
      */
     public Set<String> generateAll() throws StackOverflowError, OutOfMemoryError {
-        return generateAll(Integer.MAX_VALUE);
+        return generateAllLimited(Integer.MAX_VALUE, Integer.MAX_VALUE);
     }
 
     /**
@@ -120,7 +121,38 @@ public class GreexGenerator {
      * @throws StackOverflowError might be thrown if the regular expression is non-finite
      */
     public Set<String> generateAll(int maxLength) throws StackOverflowError, OutOfMemoryError {
-        return GreexAllGenerator.generateAll(automaton, maxLength);
+        return generateAllLimited(Integer.MAX_VALUE, maxLength);
+    }
+
+    /**
+     * Generate all the matches for this generator's regular expression up to the given number of
+     * matches.
+     * <p>
+     * This method is always thread safe.
+     *
+     * @param maxCount the maximum number of matches to generate before stopping
+     * @return an unordered set of all matches
+     * @throws OutOfMemoryError   might be thrown if the regular expression is non-finite
+     * @throws StackOverflowError might be thrown if the regular expression is non-finite
+     */
+    public Set<String> generateAllLimited(int maxCount) throws StackOverflowError, OutOfMemoryError {
+        return generateAllLimited(maxCount, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Generate all the matches for this generator's regular expression where the length of the
+     * generated string is less than the given maximum length up to the given number of matches.
+     * <p>
+     * This method is always thread safe.
+     *
+     * @param maxCount the maximum number of matches to generate before stopping
+     * @param maxLength the maximum string length for generated matches
+     * @return an unordered set of all matches with lengths less than the given maximum length
+     * @throws OutOfMemoryError   might be thrown if the regular expression is non-finite
+     * @throws StackOverflowError might be thrown if the regular expression is non-finite
+     */
+    public Set<String> generateAllLimited(int maxCount, int maxLength) throws StackOverflowError, OutOfMemoryError {
+        return GreexAllGenerator.generateAll(automaton, maxLength, maxCount);
     }
 
     /**

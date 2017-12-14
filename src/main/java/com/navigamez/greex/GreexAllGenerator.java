@@ -8,16 +8,20 @@ import java.util.*;
 
 class GreexAllGenerator {
 
-    static Set<String> generateAll(Automaton automaton, int maxLength) {
+    static Set<String> generateAll(Automaton automaton, int maxLength, int maxCount) {
         Set<String> strings = new HashSet<String>();
-        generateAll(automaton.getInitialState(), strings, new ArrayList<Character>(), maxLength);
+        generateAll(automaton.getInitialState(), strings, new ArrayList<Character>(), maxLength, maxCount);
         return strings;
     }
 
     private static void generateAll(State state,
                                     Set<String> strings,
                                     List<Character> currentChoices,
-                                    int maxLength) {
+                                    int maxLength,
+                                    int maxCount) {
+        if (strings.size() >= maxCount) {
+            return;
+        }
         List<Transition> transitions = state.getSortedTransitions(false);
         if (state.isAccept()) {
             strings.add(build(currentChoices));
@@ -28,7 +32,7 @@ class GreexAllGenerator {
         for (Transition transition : transitions) {
             for (char c = transition.getMin(); c <= transition.getMax(); c++) {
                 currentChoices.add(c);
-                generateAll(transition.getDest(), strings, currentChoices, maxLength);
+                generateAll(transition.getDest(), strings, currentChoices, maxLength, maxCount);
                 currentChoices.remove(currentChoices.size() - 1);
             }
         }
