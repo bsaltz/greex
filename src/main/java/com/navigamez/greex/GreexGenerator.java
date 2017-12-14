@@ -173,7 +173,6 @@ public class GreexGenerator {
      * @param random the {@link Random} to use for generation.
      * @param count the number of matches to generate
      * @return a random string that matches the given regular expression
-     * @throws StackOverflowError might be thrown if the regular expression is non-finite
      */
     public List<String> generateRandom(Random random, int count) throws StackOverflowError {
         return generateRandom(random, count, true);
@@ -190,7 +189,6 @@ public class GreexGenerator {
      * @param seed the seed to use for the {@link Random} instance.
      * @param count the number of matches to generate
      * @return a random string that matches the given regular expression
-     * @throws StackOverflowError might be thrown if the regular expression is non-finite
      */
     public List<String> generateRandom(long seed, int count) throws StackOverflowError {
         return generateRandom(new Random(seed), count);
@@ -211,7 +209,6 @@ public class GreexGenerator {
      * @param count the number of matches to generate
      * @param unique {@code true} if the matches must be unique
      * @return a random string that matches the given regular expression
-     * @throws StackOverflowError might be thrown if the regular expression is non-finite
      */
     public List<String> generateRandom(Random random, int count, boolean unique) throws StackOverflowError {
         return generateRandom(random, count, unique, -1, null);
@@ -234,7 +231,6 @@ public class GreexGenerator {
      * @param count the number of matches to generate
      * @param unique {@code true} if the matches must be unique
      * @return a random string that matches the given regular expression
-     * @throws StackOverflowError might be thrown if the regular expression is non-finite
      */
     public List<String> generateRandom(long seed, int count, boolean unique) throws StackOverflowError {
         return generateRandom(new Random(seed), count, unique, -1, null);
@@ -262,7 +258,6 @@ public class GreexGenerator {
      *                to disable timeouts
      * @param timeoutUnit the {@link TimeUnit} for the timeout, or {@code null} to disable timeouts
      * @return a random string that matches the given regular expression
-     * @throws StackOverflowError might be thrown if the regular expression is non-finite
      */
     public List<String> generateRandom(Random random, int count, boolean unique, long timeout, TimeUnit timeoutUnit) throws StackOverflowError {
         Collection<String> results = unique ? new HashSet<String>(count) : new ArrayList<String>(count);
@@ -306,7 +301,6 @@ public class GreexGenerator {
      *                to disable timeouts
      * @param timeoutUnit the {@link TimeUnit} for the timeout, or {@code null} to disable timeouts
      * @return a random string that matches the given regular expression
-     * @throws StackOverflowError might be thrown if the regular expression is non-finite
      */
     public List<String> generateRandom(long seed, int count, boolean unique, long timeout, TimeUnit timeoutUnit) throws StackOverflowError {
         return generateRandom(new Random(seed), count, unique, timeout, timeoutUnit);
