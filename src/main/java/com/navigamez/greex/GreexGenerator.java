@@ -131,9 +131,8 @@ public class GreexGenerator {
      * This method is never thread safe.
      *
      * @return a random string that matches the given regular expression
-     * @throws StackOverflowError might be thrown if the regular expression is non-finite
      */
-    public String generateRandom() throws StackOverflowError {
+    public String generateRandom() {
         return generateRandom(random);
     }
 
@@ -147,9 +146,8 @@ public class GreexGenerator {
      *
      * @param seed the seed to use for the {@link Random} instance.
      * @return a random string that matches the given regular expression
-     * @throws StackOverflowError might be thrown if the regular expression is non-finite
      */
-    public String generateRandom(long seed) throws StackOverflowError {
+    public String generateRandom(long seed) {
         return generateRandom(new Random(seed));
     }
 
@@ -161,9 +159,8 @@ public class GreexGenerator {
      *
      * @param random the {@link Random} to use for generation.
      * @return a random string that matches the given regular expression
-     * @throws StackOverflowError might be thrown if the regular expression is non-finite
      */
-    public String generateRandom(Random random) throws StackOverflowError {
+    public String generateRandom(Random random) {
         return GreexRandomGenerator.generateRandom(this.automaton, random);
     }
 }
