@@ -12,12 +12,10 @@ import java.util.Random;
  * This class was adapted from the <a href="https://github.com/bluezio/xeger">Xeger library</a>.
  * <p>
  * Using the {@link Automaton} class, this class generates random matches for the state machine.
- * This class can throw a {@link StackOverflowError} when generating a match for a non-finite
- * regular expression.
  */
 class GreexRandomGenerator {
 
-    static String generateRandom(Automaton automaton, Random random) throws StackOverflowError {
+    static String generateRandom(Automaton automaton, Random random) {
         StringBuilder builder = new StringBuilder();
         State state = automaton.getInitialState();
         do {
