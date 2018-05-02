@@ -2,9 +2,8 @@ package com.navigamez.greex;
 
 import org.junit.Test;
 
-import java.util.Random;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
@@ -97,6 +96,79 @@ public class GreexGeneratorTest {
     }
 
     @Test
+    public void generateRandom_6() {
+        String regex = "a*([bd])+c?";
+        Pattern pattern = Pattern.compile(regex);
+        GreexGenerator generator = new GreexGenerator(regex);
+        int count = 50;
+        List<String> s1s = generator.generateRandom(1989465435487498L, count);
+        List<String> s2s = generator.generateRandom(1989465435487498L, count);
+        assertEquals(s1s, s2s);
+        assertEquals(count, s1s.size());
+        assertEquals(count, new HashSet<String>(s1s).size());
+        for (String s1 : s1s) {
+            assertTrue(pattern.matcher(s1).matches());
+        }
+    }
+
+    @Test
+    public void generateRandom_7() {
+        String regex = "a*([bd])+c?";
+        Pattern pattern = Pattern.compile(regex);
+        GreexGenerator generator = new GreexGenerator(regex);
+        int count = 50;
+        List<String> s1s = generator.generateRandom(1989465435487498L, count, false);
+        List<String> s2s = generator.generateRandom(1989465435487498L, count, false);
+        assertEquals(s1s, s2s);
+        assertEquals(count, s1s.size());
+        Set<String> uniqueS1s = new HashSet<String>(s1s);
+        assertTrue(count > uniqueS1s.size());
+        for (String s1 : uniqueS1s) {
+            assertTrue(pattern.matcher(s1).matches());
+        }
+    }
+
+    @Test
+    public void generateRandom_8() {
+        // Uses regex for which it is impossible to generate 50 matches
+        String regex = "a";
+        Pattern pattern = Pattern.compile(regex);
+        GreexGenerator generator = new GreexGenerator(regex);
+        int count = 50;
+        long start1 = System.currentTimeMillis();
+        List<String> s1s = generator.generateRandom(1989465435487498L, count, true, 2, TimeUnit.SECONDS);
+        long end1 = System.currentTimeMillis();
+        long start2 = System.currentTimeMillis();
+        generator.generateRandom(1989465435487498L, count, true, 2, TimeUnit.SECONDS);
+        long end2 = System.currentTimeMillis();
+        Set<String> uniqueS1s = new HashSet<String>(s1s);
+        assertTrue(count > uniqueS1s.size());
+        for (String s1 : uniqueS1s) {
+            assertTrue(pattern.matcher(s1).matches());
+        }
+        assertTrue(end1 - start1 >= 2000);
+        assertTrue(end2 - start2 >= 2000);
+    }
+
+    @Test
+    public void generateRandom_9() {
+        String regex = "a*([bd])+c?";
+        Pattern pattern = Pattern.compile(regex);
+        GreexGenerator generator = new GreexGenerator(regex);
+        int count = 50;
+        // Verify behavior is the same
+        List<String> s1s = generator.generateRandom(1989465435487498L, count, false, 1, null);
+        List<String> s2s = generator.generateRandom(1989465435487498L, count, false, -1, TimeUnit.MILLISECONDS);
+        assertEquals(s1s, s2s);
+        assertEquals(count, s1s.size());
+        Set<String> uniqueS1s = new HashSet<String>(s1s);
+        assertTrue(count > uniqueS1s.size());
+        for (String s1 : uniqueS1s) {
+            assertTrue(pattern.matcher(s1).matches());
+        }
+    }
+
+    @Test
     public void generateAll_1() {
         String regex = "(white|black)|((light|dark) )?(red|green|blue|gray)";
         int uniqueStrings = 14;
@@ -123,6 +195,40 @@ public class GreexGeneratorTest {
         System.out.println("Unique strings: " + results.size());
         System.out.printf("Coverage: %%%.2f\n", results.size() * 100.0 / uniqueStrings);
         assertEquals(uniqueStrings, results.size());
+        for (String s : results) {
+            assertTrue(pattern.matcher(s).matches());
+        }
+    }
+
+    @Test
+    public void generateAllLimited_1() {
+        String regex = "(white|black)|((light|dark) )?(red|green|blue|gray)";
+        int uniqueStrings = 14;
+        int maxCount = 5;
+        Pattern pattern = Pattern.compile(regex);
+        GreexGenerator generator = new GreexGenerator(regex);
+        Set<String> results = new TreeSet<String>();
+        results.addAll(generator.generateAllLimited(maxCount));
+        System.out.println("Unique strings: " + results.size());
+        System.out.printf("Coverage: %%%.2f\n", results.size() * 100.0 / uniqueStrings);
+        for (String s : results) {
+            System.out.println(s);
+            assertTrue(pattern.matcher(s).matches());
+        }
+        assertEquals(maxCount, results.size());
+    }
+
+    @Test
+    public void generateAllLimited_2() {
+        String regex = "a*([bd])+c?";
+        int uniqueStrings = 6098;
+        int maxCount = 1000;
+        Pattern pattern = Pattern.compile(regex);
+        GreexGenerator generator = new GreexGenerator(regex);
+        Set<String> results = generator.generateAllLimited(maxCount, 10);
+        System.out.println("Unique strings: " + results.size());
+        System.out.printf("Coverage: %%%.2f\n", results.size() * 100.0 / uniqueStrings);
+        assertEquals(maxCount, results.size());
         for (String s : results) {
             assertTrue(pattern.matcher(s).matches());
         }

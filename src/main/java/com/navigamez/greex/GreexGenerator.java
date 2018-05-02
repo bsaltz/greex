@@ -3,8 +3,8 @@ package com.navigamez.greex;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
 
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Generates matches for a given regular expression. Support for regular expressions is provided by
@@ -96,7 +96,8 @@ public class GreexGenerator {
 
     /**
      * Generate all the matches for this generator's regular expression. This method is the same as
-     * invoking {@code generateAll(Integer.MAX_VALUE)}.
+     * invoking {@code generateAll(Integer.MAX_VALUE)}. This method is the same as calling
+     * {@link #generateAllLimited(int, int)} with {@link Integer#MAX_VALUE} for both arguments.
      * <p>
      * This method is always thread safe.
      *
@@ -105,7 +106,7 @@ public class GreexGenerator {
      * @throws StackOverflowError might be thrown if the regular expression is non-finite
      */
     public Set<String> generateAll() throws StackOverflowError, OutOfMemoryError {
-        return generateAll(Integer.MAX_VALUE);
+        return generateAllLimited(Integer.MAX_VALUE, Integer.MAX_VALUE);
     }
 
     /**
@@ -120,7 +121,38 @@ public class GreexGenerator {
      * @throws StackOverflowError might be thrown if the regular expression is non-finite
      */
     public Set<String> generateAll(int maxLength) throws StackOverflowError, OutOfMemoryError {
-        return GreexAllGenerator.generateAll(automaton, maxLength);
+        return generateAllLimited(Integer.MAX_VALUE, maxLength);
+    }
+
+    /**
+     * Generate all the matches for this generator's regular expression up to the given number of
+     * matches.
+     * <p>
+     * This method is always thread safe.
+     *
+     * @param maxCount the maximum number of matches to generate before stopping
+     * @return an unordered set of all matches
+     * @throws OutOfMemoryError   might be thrown if the regular expression is non-finite
+     * @throws StackOverflowError might be thrown if the regular expression is non-finite
+     */
+    public Set<String> generateAllLimited(int maxCount) throws StackOverflowError, OutOfMemoryError {
+        return generateAllLimited(maxCount, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Generate all the matches for this generator's regular expression where the length of the
+     * generated string is less than the given maximum length up to the given number of matches.
+     * <p>
+     * This method is always thread safe.
+     *
+     * @param maxCount the maximum number of matches to generate before stopping
+     * @param maxLength the maximum string length for generated matches
+     * @return an unordered set of all matches with lengths less than the given maximum length
+     * @throws OutOfMemoryError   might be thrown if the regular expression is non-finite
+     * @throws StackOverflowError might be thrown if the regular expression is non-finite
+     */
+    public Set<String> generateAllLimited(int maxCount, int maxLength) throws StackOverflowError, OutOfMemoryError {
+        return GreexAllGenerator.generateAll(automaton, maxLength, maxCount);
     }
 
     /**
@@ -131,9 +163,8 @@ public class GreexGenerator {
      * This method is never thread safe.
      *
      * @return a random string that matches the given regular expression
-     * @throws StackOverflowError might be thrown if the regular expression is non-finite
      */
-    public String generateRandom() throws StackOverflowError {
+    public String generateRandom() {
         return generateRandom(random);
     }
 
@@ -147,9 +178,8 @@ public class GreexGenerator {
      *
      * @param seed the seed to use for the {@link Random} instance.
      * @return a random string that matches the given regular expression
-     * @throws StackOverflowError might be thrown if the regular expression is non-finite
      */
-    public String generateRandom(long seed) throws StackOverflowError {
+    public String generateRandom(long seed) {
         return generateRandom(new Random(seed));
     }
 
@@ -161,9 +191,150 @@ public class GreexGenerator {
      *
      * @param random the {@link Random} to use for generation.
      * @return a random string that matches the given regular expression
-     * @throws StackOverflowError might be thrown if the regular expression is non-finite
      */
-    public String generateRandom(Random random) throws StackOverflowError {
+    public String generateRandom(Random random) {
         return GreexRandomGenerator.generateRandom(this.automaton, random);
+    }
+
+    /**
+     * Generates multiple, unique random matches for this generator's regular expression. This uses
+     * the given {@link Random} instance and defaults to no timeout.
+     * <p>
+     * This method is only thread safe if the given {@link Random} is managed in a thread-safe way.
+     *
+     * @param random the {@link Random} to use for generation.
+     * @param count the number of matches to generate
+     * @return a random string that matches the given regular expression
+     */
+    public List<String> generateRandom(Random random, int count) throws StackOverflowError {
+        return generateRandom(random, count, true);
+    }
+
+    /**
+     * Generates multiple, unique random matches for this generator's regular expression. This
+     * creates a new {@link Random} instance using the given {@code seed} and defaults to no
+     * timeout. Subsequent calls with the same seed will create a new {@link Random} each time, and
+     * so this will always return the same result for the same regular expression and seed.
+     * <p>
+     * This method is always thread safe.
+     *
+     * @param seed the seed to use for the {@link Random} instance.
+     * @param count the number of matches to generate
+     * @return a random string that matches the given regular expression
+     */
+    public List<String> generateRandom(long seed, int count) throws StackOverflowError {
+        return generateRandom(new Random(seed), count);
+    }
+
+    /**
+     * Generates multiple random matches for this generator's regular expression. This uses the
+     * given {@link Random} instance and defaults to no timeout.
+     * <p>
+     * Because of the random nature of this method, it's possible that when {@code unique} is true,
+     * calculating random matches may result in throwing away several generated matches and this
+     * method could take a long time. To avoid this issue, use
+     * {@link #generateRandom(Random, int, boolean, long, TimeUnit)} instead.
+     * <p>
+     * This method is only thread safe if the given {@link Random} is managed in a thread-safe way.
+     *
+     * @param random the {@link Random} to use for generation.
+     * @param count the number of matches to generate
+     * @param unique {@code true} if the matches must be unique
+     * @return a random string that matches the given regular expression
+     */
+    public List<String> generateRandom(Random random, int count, boolean unique) throws StackOverflowError {
+        return generateRandom(random, count, unique, -1, null);
+    }
+
+    /**
+     * Generates multiple random matches for this generator's regular expression. This creates a new
+     * {@link Random} instance using the given {@code seed} and defaults to no timeout. Subsequent
+     * calls with the same seed will create a new {@link Random} each time, and so this will always
+     * return the same result for the same regular expression and seed.
+     * <p>
+     * Because of the random nature of this method, it's possible that when {@code unique} is true,
+     * calculating random matches may result in throwing away several generated matches and this
+     * method could take a long time. To avoid this issue, use
+     * {@link #generateRandom(Random, int, boolean, long, TimeUnit)} instead.
+     * <p>
+     * This method is always thread safe.
+     *
+     * @param seed the seed to use for the {@link Random} instance.
+     * @param count the number of matches to generate
+     * @param unique {@code true} if the matches must be unique
+     * @return a random string that matches the given regular expression
+     */
+    public List<String> generateRandom(long seed, int count, boolean unique) throws StackOverflowError {
+        return generateRandom(new Random(seed), count, unique, -1, null);
+    }
+
+    /**
+     * Generates multiple random matches for this generator's regular expression. This uses the
+     * given {@link Random} instance.
+     * <p>
+     * Because of the random nature of this method, it's possible that when {@code unique} is true,
+     * calculating random matches may result in throwing away several generated matches and this
+     * method could take a long time. This variant has a timeout option that can be specified that
+     * will make this method return if the timeout is exceeded. Note that this will not fail-fast on
+     * the timeout. If the code is generating a match at the time that the timeout is exceeded, then
+     * this method won't return until that final match is generated. To disable timeouts, either
+     * pass a non-positive number for {@code count} ({@code count <= 0}) or {@code null} for
+     * {@code timeoutUnit}.
+     * <p>
+     * This method is only thread safe if the given {@link Random} is managed in a thread-safe way.
+     *
+     * @param random the {@link Random} to use for generation.
+     * @param count the number of matches to generate
+     * @param unique {@code true} if the matches must be unique
+     * @param timeout the number of {@link TimeUnit}s to wait before returning, or a number &lt;= 0
+     *                to disable timeouts
+     * @param timeoutUnit the {@link TimeUnit} for the timeout, or {@code null} to disable timeouts
+     * @return a random string that matches the given regular expression
+     */
+    public List<String> generateRandom(Random random, int count, boolean unique, long timeout, TimeUnit timeoutUnit) throws StackOverflowError {
+        Collection<String> results = unique ? new HashSet<String>(count) : new ArrayList<String>(count);
+        long stop;
+        if (timeout <= 0 || timeoutUnit == null) {
+            stop = -1;
+        } else {
+            stop = timeoutUnit.toMillis(timeout) + System.currentTimeMillis();
+        }
+        while (results.size() < count) {
+            long now = System.currentTimeMillis();
+            if (stop > 0 && stop < now) {
+                break;
+            }
+            results.add(generateRandom(random));
+        }
+        return new ArrayList<String>(results);
+    }
+
+    /**
+     * Generates multiple random matches for this generator's regular expression. This creates a new
+     * {@link Random} instance using the given {@code seed} and defaults to no timeout. Subsequent
+     * calls with the same seed will create a new {@link Random} each time, and so this will always
+     * return the same result for the same regular expression and seed.
+     * <p>
+     * Because of the random nature of this method, it's possible that when {@code unique} is true,
+     * calculating random matches may result in throwing away several generated matches and this
+     * method could take a long time. This variant has a timeout option that can be specified that
+     * will make this method return if the timeout is exceeded. Note that this will not fail-fast on
+     * the timeout. If the code is generating a match at the time that the timeout is exceeded, then
+     * this method won't return until that final match is generated. To disable timeouts, either
+     * pass a non-positive number for {@code count} ({@code count <= 0}) or {@code null} for
+     * {@code timeoutUnit}.
+     * <p>
+     * This method is always thread safe.
+     *
+     * @param seed the seed to use for the {@link Random} instance.
+     * @param count the number of matches to generate
+     * @param unique {@code true} if the matches must be unique
+     * @param timeout the number of {@link TimeUnit}s to wait before returning, or a number &lt;= 0
+     *                to disable timeouts
+     * @param timeoutUnit the {@link TimeUnit} for the timeout, or {@code null} to disable timeouts
+     * @return a random string that matches the given regular expression
+     */
+    public List<String> generateRandom(long seed, int count, boolean unique, long timeout, TimeUnit timeoutUnit) throws StackOverflowError {
+        return generateRandom(new Random(seed), count, unique, timeout, timeoutUnit);
     }
 }
